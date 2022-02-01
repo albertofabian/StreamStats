@@ -1,2 +1,1 @@
 # StreamStats
-Challenge assignment
