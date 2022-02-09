@@ -1,1 +1,1 @@
-# - StreamStats -
+# StreamStats
