@@ -13,6 +13,8 @@ class Stream extends Model
      * @var string
      */
     protected $table = 'streams';
+    
+    public $timestamps = false;
 
     /**
      * The attributes that are mass assignable.

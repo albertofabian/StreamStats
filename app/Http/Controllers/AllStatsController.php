@@ -6,7 +6,9 @@ use Illuminate\Http\Request;
 
 class AllStatsController extends Controller
 {
-    public function ShowAllResults (){
-        return view('index');
+    public function ShowAllResults() {
+        
+        echo "HOLA";
+        ///return view('welcome');
     }
 }

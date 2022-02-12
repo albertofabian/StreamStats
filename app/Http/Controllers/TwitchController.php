@@ -4,17 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-/////////////
 namespace App\Helpers;
-
-use App\Models\FacebookAccount;
-use App\Models\FacebookPage;
-use App\Models\Influencer;
 use Exception;
-use App\Exceptions\FacebookException;
-use App\Helpers\EventHelper;
-use Carbon\Carbon;
-//////
 
 
 class TwitchController extends Controller
@@ -24,6 +15,7 @@ class TwitchController extends Controller
     private $endpoint;
     private $twitch_client_id;
     private $twitch_client_secret;
+    private $twitch_bearer_token;
 
     public function __construct(\GuzzleHttp\Client $client)
     {
@@ -31,6 +23,7 @@ class TwitchController extends Controller
         $this->endpoint             = getenv('TWITCH_ENDPOINT');
         $this->twitch_client_id     = getenv('TWITCH_CLIENT_ID');
         $this->twitch_client_secret = getenv('TWITCH_CLIENT_SECRET');
+        $this->twitch_bearer_token  = getenv('TWITCH_BEARER_TOKEN');
     }
 
     public function getStreams()
