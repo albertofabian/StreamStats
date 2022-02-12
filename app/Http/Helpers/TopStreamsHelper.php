@@ -11,15 +11,18 @@ use Exception;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 class TopStreamsHelper
 {       
     static function seedTopStreams() {
         
-        echo "Seed BEGIN\n";
+        echo "BEGIN: Top 1000 streams seed\n";
         $cursor = "";
         $data = [];
+        $count = 0; 
         
-        for ($i = 0; $i < 50; $i++) {
+        //for ($i = 0; $i < 50; $i++) {
+        do {
             $client = new \GuzzleHttp\Client([
                 'headers' => [
                     'client-id'     => getenv('TWITCH_CLIENT_ID'),
@@ -36,30 +39,43 @@ class TopStreamsHelper
             $response = json_decode($response->getBody());
             $cursor = $response->pagination->cursor;            
             $data = array_merge($data, $response->data);
-        }
+            
+            if (sizeof($data) >= 1000) break; 
+            
+        } while(sizeof($response->data));
+        
+        $data = array_slice($data, 0, 1000);
+        
+        shuffle($data);
 
         try {
-            Stream::truncate();
             
-            shuffle($data);
+            Stream::truncate();
+            $all_records = [];
             
             foreach($data as $element) {
-                $stream = new Stream();
-                $stream->client_id          = $element->user_id;
-                $stream->channel_name       = $element->user_name;
-                $stream->stream_title       = $element->title;
-                $stream->game_name          = $element->game_name;
-                $stream->number_of_viewers  = $element->viewer_count;
+                               
                 $started_at = str_replace("T", " ", $element->started_at);
                 $started_at = str_replace("Z", " ", $started_at);
-                $stream->started_at         = $started_at;
-                $stream->save();        
-                unset($stream);
+                
+                array_push($all_records, [
+                    'client_id'         => $element->user_id,
+                    'channel_name'      => $element->user_name,
+                    'stream_title'      => $element->title,
+                    'game_name'         => $element->game_name,
+                    'number_of_viewers' => $element->viewer_count,
+                    'started_at'        => $started_at
+                ]);
             }
+            
+            Stream::insert($all_records);
+            
         } catch (Exception $e) {
            error_log($e);
-           return;
+           return false;
         }
-        echo "Seed END\n";
+        
+        echo "END: Top 1000 streams seed\n";
+        return true;
     }
 }
