@@ -72,7 +72,7 @@
                 Game
             </th>
             <th>
-                Total Streams
+                Streams
             </th>
             </thead>
             @foreach($gamesTotalStreams as $gameTotalStreams)
@@ -89,7 +89,7 @@
                 Game
             </th>
             <th>
-                Total Viewers
+                Viewers
             </th>
             </thead>
             @foreach($gamesTotalViewers as $gameTotalViewers)
@@ -108,7 +108,7 @@
                 Top 100 Streams
             </th>
             <th>
-                Total Viewers
+                Viewers
             </th>
             </thead>
             @foreach($topStreamsViewers as $topStreamViewers)
@@ -119,4 +119,21 @@
             @endforeach
         </table>
  
+        <table>
+            <thead>
+            <th>
+                Started Round Hour Time
+            </th>
+            <th>
+                Streams
+            </th>
+            </thead>
+            @foreach($started_times as $time => $streams)
+            <tr>
+                <td>{{ $time }}</td>
+                <td>{{ $streams }}</td>
+            </tr>
+            @endforeach
+        </table>
+        
     </body>

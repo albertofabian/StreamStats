@@ -95,11 +95,12 @@ class TwitchController extends Controller
         $this->gamesTotalViewers = $this->getGamesTotalViewers();
         $gamesTotalViewers = $this->gamesTotalViewers;
         
-        $avg_viewers = $this->getAverageStreamsViewers();
+        $avg_viewers        = $this->getAverageStreamsViewers();
+        $topStreamsViewers  = $this->getTop100StreamsViewers();
+        $started_times      = $this->getStreamsCountPerRoundedHour();
+        ksort($started_times);
         
-        $topStreamsViewers = $this->getTop100StreamsViewers();
-                
-        return view('stream_statistics', compact("gamesTotalStreams", "gamesTotalViewers", "avg_viewers", "topStreamsViewers"));
+        return view('stream_statistics', compact("gamesTotalStreams", "gamesTotalViewers", "avg_viewers", "topStreamsViewers", "started_times"));
     }
     
     public function getAverageStreamsViewers () {
@@ -122,11 +123,36 @@ class TwitchController extends Controller
     
     public function getStreamsCountPerRoundedHour() {
         
+        try { 
+            $started_times = DB::select("SELECT started_at FROM streamstats.streams");
+        } catch (Exception $e) {
+           error_log($e);
+           return [];
+        }
+        
+        $result = [];
+        
+        foreach ($started_times as $started_time) {
+            
+            $nearestHourTime = $this->roundTimetoNearestHour($started_time->started_at);
+            
+            if ( !isset($result[$nearestHourTime]) ) {
+                $result[$nearestHourTime] = 0;
+            } else {
+                $result[$nearestHourTime]++;
+            }
+        }
+        
+        return $result; 
     } 
     
     private function roundTimetoNearestHour($timestamp) {
         $timestamp = strtotime($timestamp);
-        return date('Y-m-d H:i:s', round($timestamp / $precision) * 3600);
+        return date('Y-m-d H:i:s', round($timestamp / 3600) * 3600);
+    }
+    
+    public function getUserFollowedStreams() {
+        
     }
     
 }

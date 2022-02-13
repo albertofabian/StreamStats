@@ -13,10 +13,13 @@
 
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('index');
 });
 
 Route::get('hola', 'AllStatsController@ShowAllResults');
+
+Route::get('games-total-streams', 'TwitchController@getGamesTotalStreams');
+Route::get('/', 'TwitchController@ShowAllResults');
 
 //Auth::routes();
 
