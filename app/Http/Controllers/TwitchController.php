@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use App\Http\Helpers\TopStreamsHelper;
 
 class TwitchController extends Controller
 {
@@ -88,19 +89,28 @@ class TwitchController extends Controller
     }
     
     public function showAllResults() {
+                
+        //TopStreamsHelper::seedTopStreams();
         
         $this->gamesTotalStreams = $this->getGamesTotalStreams();
-        $gamesTotalStreams = $this->gamesTotalStreams;
-        
         $this->gamesTotalViewers = $this->getGamesTotalViewers();
+        
+        $avg_viewers            = $this->getAverageStreamsViewers();
+        $topStreamsViewers      = $this->getTop100StreamsViewers();
+        $started_times          = $this->getStreamsCountPerRoundedHour();
+        $userFollowedTopStreams = $this->getUserFollowedStreamsFromTop1000();
+        
+        $gamesTotalStreams = $this->gamesTotalStreams;
         $gamesTotalViewers = $this->gamesTotalViewers;
         
-        $avg_viewers        = $this->getAverageStreamsViewers();
-        $topStreamsViewers  = $this->getTop100StreamsViewers();
-        $started_times      = $this->getStreamsCountPerRoundedHour();
         ksort($started_times);
         
-        return view('stream_statistics', compact("gamesTotalStreams", "gamesTotalViewers", "avg_viewers", "topStreamsViewers", "started_times"));
+        return view('stream_statistics', compact("gamesTotalStreams", 
+                                                 "gamesTotalViewers", 
+                                                 "avg_viewers", 
+                                                 "topStreamsViewers", 
+                                                 "started_times", 
+                                                 "userFollowedTopStreams"));
     }
     
     public function getAverageStreamsViewers () {
@@ -151,8 +161,58 @@ class TwitchController extends Controller
         return date('Y-m-d H:i:s', round($timestamp / 3600) * 3600);
     }
     
-    public function getUserFollowedStreams() {
+    public function getUserFollowedStreamsFromTop1000() {
         
+        ///// Values for testing ////
+        $user_id = 603680830;
+        $bearer = "p7he3d5czedyewfjrx89vpcqgz3omi";
+        
+        //////////////////////////////
+        $cursor = "";
+        $data = [];
+        $count = 0; 
+        
+        do {
+            $client = new \GuzzleHttp\Client([
+                'headers' => [
+                    'client-id'     => getenv('TWITCH_CLIENT_ID'),
+                    'Authorization' => 'Bearer ' . $bearer
+                ]
+            ]) ;
+
+            $response = $client->request('GET', getenv('TWITCH_ENDPOINT')."streams/followed", [
+                'query' => [
+                    'user_id' => $user_id,
+                    'after' => $cursor
+                ]
+            ]);
+
+            $response = json_decode($response->getBody());
+            
+            if (isset($response->pagination->cursor)) {
+                $cursor = $response->pagination->cursor;            
+            }   
+            
+            $data = array_merge($data, $response->data);
+            
+            if (sizeof($data) >= 1000) break; 
+            
+        } while($cursor);
+
+        
+        $stream_titles = [];
+        foreach ($data as $user_stream) {
+           $stream_titles[] =  $user_stream->title;
+        }
+        
+        $stream_titles = implode($stream_titles);
+        
+        $followedStreamsFromTop = DB::select( " SELECT stream_title 
+                                                FROM streamstats.streams
+                                                WHERE stream_title IN ('{$stream_titles}')"); 
+        //dd($followedStreamsFromTop);
+        return $followedStreamsFromTop;
+    
     }
     
 }

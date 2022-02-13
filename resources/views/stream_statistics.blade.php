@@ -5,13 +5,13 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Laravel</title>
+        <title>StreamStats</title>
 
         <!-- Fonts -->
-        <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css">
+        <!--link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css"-->
 
         <!-- Styles -->
-        <!--style>
+        <style>
             html, body {
                 background-color: #fff;
                 color: #636b6f;
@@ -50,7 +50,7 @@
             }
 
             .links > a {
-                color: #636b6f;
+                /*color: #636b6f;*/
                 padding: 0 25px;
                 font-size: 12px;
                 font-weight: 600;
@@ -62,18 +62,28 @@
             .m-b-md {
                 margin-bottom: 30px;
             }
-        </style-->
+            .table1 {
+                overflow:scroll;
+                height:200px;
+                width:500px;
+           }
+        </style>
     </head>
     <body>
         
-        <table>
+        <table class="table1" border="1"> 
             <thead>
-            <th>
-                Game
-            </th>
-            <th>
-                Streams
-            </th>
+                <th colspan="2">
+                    Total number of streams for each game
+                </th>
+            </thead>
+            <thead>
+                <th>
+                    Game
+                </th>
+                <th>
+                    Streams
+                </th>
             </thead>
             @foreach($gamesTotalStreams as $gameTotalStreams)
             <tr>
@@ -84,6 +94,11 @@
         </table>
         
         <table>
+            <thead>
+                <th colspan="2">
+                    Top games by viewer count for each game
+                </th>
+            </thead>
             <thead>
             <th>
                 Game
@@ -104,6 +119,11 @@
         
         <table>
             <thead>
+                <th colspan="2">
+                    List of top 100 streams by viewer count that can be sorted asc & desc
+                </th>
+            </thead>
+            <thead>
             <th>
                 Top 100 Streams
             </th>
@@ -121,12 +141,17 @@
  
         <table>
             <thead>
-            <th>
-                Started Round Hour Time
-            </th>
-            <th>
-                Streams
-            </th>
+                <th colspan="2">
+                    Total number of streams by their start time (rounded to the nearest hour)
+                </th>
+            </thead>
+            <thead>
+                <th>
+                    Started Round Hour Time
+                </th>
+                <th>
+                    Streams
+                </th>
             </thead>
             @foreach($started_times as $time => $streams)
             <tr>
@@ -134,6 +159,29 @@
                 <td>{{ $streams }}</td>
             </tr>
             @endforeach
+        </table>
+        
+        <table>
+            <thead>
+                <th colspan="2">
+                    Which of the top 1000 streams is the logged in user following
+                </th>
+            </thead>
+            <thead>
+            <th>
+                Streams Followed by user from Top 1000
+            </th>            
+            </thead>
+            @foreach($userFollowedTopStreams as $stream)
+            <tr>
+                <td>{{ $stream->title }}</td>
+            </tr>
+            @endforeach
+            @if (!sizeof($userFollowedTopStreams))
+            <tr>
+                <td>-- None --</td>
+            </tr>            
+            @endif
         </table>
         
     </body>

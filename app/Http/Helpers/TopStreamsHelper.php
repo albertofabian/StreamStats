@@ -16,7 +16,7 @@ class TopStreamsHelper
 {       
     static function seedTopStreams() {
         
-        echo "BEGIN: Top 1000 streams seed\n";
+        //echo "BEGIN: Top 1000 streams seed\n";
         $cursor = "";
         $data = [];
         $count = 0; 
@@ -75,7 +75,7 @@ class TopStreamsHelper
            return false;
         }
         
-        echo "END: Top 1000 streams seed\n";
+        //echo "END: Top 1000 streams seed\n";
         return true;
     }
 }
