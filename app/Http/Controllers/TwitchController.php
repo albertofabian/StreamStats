@@ -3,14 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
-namespace App\Helpers;
+use Illuminate\Support\Facades\DB;
 use Exception;
-
 
 class TwitchController extends Controller
 {
 
+    protected $gamesTotalStreams;
+    protected $gamesTotalViewers;
+    
     private $client;
     private $endpoint;
     private $twitch_client_id;
@@ -41,38 +42,91 @@ class TwitchController extends Controller
     }
 
   
-    public function linkInfluencer($accessToken, $pageId, Influencer $influencer)
-    {
-        if ($influencer->facebook_page_id) {
-            throw new FacebookException('This Influencer is already associated with a Facebook Page', true);
+    public function getGamesTotalStreams() {
+
+        try { 
+            $gameTotalStreams = DB::select(" SELECT game_name, COUNT(game_name) as num_of_streams
+                                             FROM streamstats.streams
+                                             GROUP BY game_name
+                                             ORDER BY num_of_streams DESC");
+        } catch (Exception $e) {
+           error_log($e);
+           return [];
         }
+        
+       return $gameTotalStreams; 
+    }
+    
+    public function getGamesTotalViewers() {
 
-        $facebookPage = FacebookPage::has('influencer')->where('page_id', $pageId)->first();
-
-        if ($facebookPage) {
-             throw new FacebookException('This Facebook Page is already associated with an Influencer', true);
+        try { 
+            $gameTotalViewers = DB::select("SELECT game_name, SUM(number_of_viewers) as number_of_viewers
+                                            FROM streamstats.streams
+                                            GROUP BY game_name
+                                            ORDER BY number_of_viewers DESC");
+        } catch (Exception $e) {
+           error_log($e);
+           return [];
         }
+        
+       return $gameTotalViewers; 
+    }
+    
+    public function getTop100StreamsViewers() {
 
-        $this->findOrCreateAccount($accessToken);
-
-        $pageData = $this->getPage($pageId);
-
-        if (!$pageData['is_eligible_for_branded_content']) {
-            throw new FacebookException('This Facebook Page is not eligible for branded content', true);
+        try { 
+            $topStreamsViewers = DB::select("SELECT stream_title, number_of_viewers
+                                             FROM streamstats.streams
+                                             ORDER BY number_of_viewers DESC
+                                             LIMIT 100");
+        } catch (Exception $e) {
+           error_log($e);
+           return [];
         }
-
-        $this->createPage($pageData);
-
-        $influencer->facebook_page_id = $this->facebookPage->id;
-
-        if (!$influencer->profile_picture_object_image_id && $this->facebookPage->profile_picture_object_image_id) {
-            $influencer->profile_picture_object_image_id = $this->facebookPage->profile_picture_object_image_id;
+        
+       return $topStreamsViewers; 
+    }
+    
+    public function showAllResults() {
+        
+        $this->gamesTotalStreams = $this->getGamesTotalStreams();
+        $gamesTotalStreams = $this->gamesTotalStreams;
+        
+        $this->gamesTotalViewers = $this->getGamesTotalViewers();
+        $gamesTotalViewers = $this->gamesTotalViewers;
+        
+        $avg_viewers = $this->getAverageStreamsViewers();
+        
+        $topStreamsViewers = $this->getTop100StreamsViewers();
+                
+        return view('stream_statistics', compact("gamesTotalStreams", "gamesTotalViewers", "avg_viewers", "topStreamsViewers"));
+    }
+    
+    public function getAverageStreamsViewers () {
+        
+        $total_viewers = 0;
+        foreach ($this->gamesTotalViewers as $gameTotalViewers) {
+            $total_viewers += $gameTotalViewers->number_of_viewers;
         }
-
-        $influencer->save();
-
-        SocialNetworksHelper::updateInfluencerSocialNetworkAggregate($influencer->id);
-
-        EventHelper::dispatch(EventHelper::FACEBOOK_CONNECT, ['influencer_id' => $influencer->id]);
-    }    
+        
+        $total_streams = sizeof($this->gamesTotalViewers);
+        
+        if ($total_streams) {
+            $avg_viewers = round($total_viewers / $total_streams, 2);
+        } else {
+            $avg_viewers = "---";
+        }
+        
+        return $avg_viewers ;
+    }
+    
+    public function getStreamsCountPerRoundedHour() {
+        
+    } 
+    
+    private function roundTimetoNearestHour($timestamp) {
+        $timestamp = strtotime($timestamp);
+        return date('Y-m-d H:i:s', round($timestamp / $precision) * 3600);
+    }
+    
 }
