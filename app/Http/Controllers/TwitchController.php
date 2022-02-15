@@ -89,7 +89,7 @@ class TwitchController extends Controller
     }
     
     public function showAllResults() {
-                
+        
         //TopStreamsHelper::seedTopStreams();
         
         $this->gamesTotalStreams = $this->getGamesTotalStreams();
@@ -99,7 +99,9 @@ class TwitchController extends Controller
         $topStreamsViewers      = $this->getTop100StreamsViewers();
         $started_times          = $this->getStreamsCountPerRoundedHour();
         $userFollowedTopStreams = $this->getUserFollowedStreamsFromTop1000();
-        
+        $viewers_needed_to_top_list = $this->calcViewersFromFollowedStreamToTop1000();
+        $tagsShared = $this->getSharedTagsBetweenUserFollowedStreamsAndTop1000Streams();
+                
         $gamesTotalStreams = $this->gamesTotalStreams;
         $gamesTotalViewers = $this->gamesTotalViewers;
         
@@ -110,7 +112,10 @@ class TwitchController extends Controller
                                                  "avg_viewers", 
                                                  "topStreamsViewers", 
                                                  "started_times", 
-                                                 "userFollowedTopStreams"));
+                                                 "userFollowedTopStreams",
+                                                 "viewers_needed_to_top_list", 
+                                                 "tagsShared"   
+                ));
     }
     
     public function getAverageStreamsViewers () {
@@ -161,9 +166,8 @@ class TwitchController extends Controller
         return date('Y-m-d H:i:s', round($timestamp / 3600) * 3600);
     }
     
-    public function getUserFollowedStreamsFromTop1000() {
-        
-        ///// Values for testing ////
+    protected function getUserFollowedStreams() {
+         ///// Values for testing ////
         $user_id = 603680830;
         $bearer = "p7he3d5czedyewfjrx89vpcqgz3omi";
         
@@ -198,21 +202,66 @@ class TwitchController extends Controller
             if (sizeof($data) >= 1000) break; 
             
         } while($cursor);
-
         
-        $stream_titles = [];
+        return $data;
+    }
+    
+    public function getUserFollowedStreamsFromTop1000() {
+        
+        $data = $this->getUserFollowedStreams();
+
+        //dd($data);
+        $stream_ids = [];
         foreach ($data as $user_stream) {
-           $stream_titles[] =  $user_stream->title;
+           $stream_ids[] =  "{$user_stream->id}";
         }
         
-        $stream_titles = implode($stream_titles);
+        $stream_ids = implode(", ", $stream_ids);
+        //dd($stream_ids);
         
         $followedStreamsFromTop = DB::select( " SELECT stream_title 
                                                 FROM streamstats.streams
-                                                WHERE stream_title IN ('{$stream_titles}')"); 
-        //dd($followedStreamsFromTop);
+                                                WHERE stream_id IN ('{$stream_ids}')"
+                                             ); 
         return $followedStreamsFromTop;
-    
     }
     
+    public function calcViewersFromFollowedStreamToTop1000() {
+        
+        $userFollowedStreams = $this->getUserFollowedStreams();
+        $min_folloewd_stream_viewers = 100000000;
+        foreach ($userFollowedStreams as $stream) {
+            if ($stream->viewer_count < $min_folloewd_stream_viewers) {
+                $min_folloewd_stream_viewers = $stream->viewer_count;
+            }
+        }
+        
+        $stream = DB::select("SELECT min(number_of_viewers) as min_viewers FROM streamstats.streams")[0];
+        
+        $min_top1000_stream_viewers = $stream->min_viewers;
+        return $min_top1000_stream_viewers - $min_folloewd_stream_viewers;
+    }
+    
+    public function getSharedTagsBetweenUserFollowedStreamsAndTop1000Streams() {
+        
+        $userFollowedStreams = $this->getUserFollowedStreams();
+        
+        $followedTags = [];
+        foreach ($userFollowedStreams as $stream) {
+            foreach ($stream->tag_ids as $tag_id) {
+                $followedTags[] = "'{$tag_id}'";
+            }
+        }
+        $followedTags = array_unique($followedTags);
+        $followedTags = implode(", ", $followedTags);
+        
+        $query = "SELECT DISTINCT tag_id FROM streamstats.stream_tags WHERE tag_id IN ({$followedTags})";
+        
+        $common_tags = DB::select($query);
+        $params = "";
+        
+        foreach ($common_tags as $tag) {
+            $params .= "tag_id=" . $tag . "&";
+        }
+    }
 }

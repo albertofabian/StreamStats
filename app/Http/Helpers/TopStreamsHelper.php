@@ -3,6 +3,7 @@
 namespace App\Http\Helpers;
 
 use App\Models\Stream;
+use App\Models\StreamTags;
 use Illuminate\Database\Eloquent;
 use Exception;
 
@@ -16,12 +17,11 @@ class TopStreamsHelper
 {       
     static function seedTopStreams() {
         
-        //echo "BEGIN: Top 1000 streams seed\n";
         $cursor = "";
         $data = [];
         $count = 0; 
+        $streamTags = [];
         
-        //for ($i = 0; $i < 50; $i++) {
         do {
             $client = new \GuzzleHttp\Client([
                 'headers' => [
@@ -42,23 +42,25 @@ class TopStreamsHelper
             
             if (sizeof($data) >= 1000) break; 
             
-        } while(sizeof($response->data));
+        } while($cursor);
         
         $data = array_slice($data, 0, 1000);
         
         shuffle($data);
-
+        
         try {
             
             Stream::truncate();
-            $all_records = [];
+            StreamTags::truncate();
+            $allRecords = [];
             
             foreach($data as $element) {
                                
                 $started_at = str_replace("T", " ", $element->started_at);
                 $started_at = str_replace("Z", " ", $started_at);
                 
-                array_push($all_records, [
+                array_push ($allRecords, [
+                    'stream_id'         => $element->id,
                     'client_id'         => $element->user_id,
                     'channel_name'      => $element->user_name,
                     'stream_title'      => $element->title,
@@ -66,16 +68,22 @@ class TopStreamsHelper
                     'number_of_viewers' => $element->viewer_count,
                     'started_at'        => $started_at
                 ]);
+                
+                foreach ($element->tag_ids as $tag_id) {
+                    array_push($streamTags, [
+                        'stream_id' => $element->id,
+                        'tag_id'    => $tag_id
+                    ]);        
+                }                
             }
             
-            Stream::insert($all_records);
+            Stream::insert($allRecords);
+            StreamTags::insert($streamTags);
             
         } catch (Exception $e) {
            error_log($e);
            return false;
-        }
-        
-        //echo "END: Top 1000 streams seed\n";
+        }        
         return true;
     }
 }

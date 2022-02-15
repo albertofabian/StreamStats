@@ -174,10 +174,30 @@
             </thead>
             @foreach($userFollowedTopStreams as $stream)
             <tr>
-                <td>{{ $stream->title }}</td>
+                <td>{{ $stream->stream_title }}</td>
             </tr>
             @endforeach
             @if (!sizeof($userFollowedTopStreams))
+            <tr>
+                <td>-- None --</td>
+            </tr>            
+            @endif
+        </table>
+        
+        <h3>Viewers needed to gain in order to make it into the top 1000 from lowest viewer count stream that the logged in user is following: {{ $viewers_needed_to_top_list }}</h3>
+        
+        <table>
+            <thead>
+                <th colspan="2">
+                    Tags shared between the user followed streams and the top 1000 streams
+                </th>
+            </thead>            
+            @foreach($tagsShared as $tagShared)
+            <tr>
+                <td>{{ $tagShared->name }}</td>
+            </tr>
+            @endforeach
+            @if (!sizeof($tagsShared))
             <tr>
                 <td>-- None --</td>
             </tr>            

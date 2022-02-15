@@ -15,7 +15,8 @@ class CreateStreamsTable extends Migration
     {
         Schema::create('streams', function (Blueprint $table) {
             $table->increments('id');            
-            $table->unsignedInteger('client_id')->index();
+            $table->bigInteger('stream_id')->unsigned()->index();
+            $table->unsignedInteger('client_id');
             $table->string('channel_name');
             $table->string('stream_title');
             $table->string('game_name');
