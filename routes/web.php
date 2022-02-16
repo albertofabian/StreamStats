@@ -16,7 +16,7 @@ Route::get('/', function () {
     return view('index');
 });
 
-Route::get('hola', 'AllStatsController@ShowAllResults');
+Route::get('hola', 'TwitchController@hola');
 
 Route::get('games-total-streams', 'TwitchController@getGamesTotalStreams');
 Route::get('/', 'TwitchController@ShowAllResults');

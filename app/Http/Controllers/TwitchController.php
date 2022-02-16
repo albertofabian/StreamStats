@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use App\Http\Helpers\TopStreamsHelper;
+use Cookie;
 
 class TwitchController extends Controller
 {
@@ -210,7 +211,6 @@ class TwitchController extends Controller
         
         $data = $this->getUserFollowedStreams();
 
-        //dd($data);
         $stream_ids = [];
         foreach ($data as $user_stream) {
            $stream_ids[] =  "{$user_stream->id}";
@@ -244,6 +244,9 @@ class TwitchController extends Controller
     
     public function getSharedTagsBetweenUserFollowedStreamsAndTop1000Streams() {
         
+        $data = [];
+        $tag_names = [];
+
         $userFollowedStreams = $this->getUserFollowedStreams();
         
         $followedTags = [];
@@ -252,16 +255,60 @@ class TwitchController extends Controller
                 $followedTags[] = "'{$tag_id}'";
             }
         }
+        
         $followedTags = array_unique($followedTags);
-        $followedTags = implode(", ", $followedTags);
         
-        $query = "SELECT DISTINCT tag_id FROM streamstats.stream_tags WHERE tag_id IN ({$followedTags})";
+        if (sizeof($followedTags)) {
+            
+            $followedTags = implode(", ", $followedTags);
         
-        $common_tags = DB::select($query);
-        $params = "";
-        
-        foreach ($common_tags as $tag) {
-            $params .= "tag_id=" . $tag . "&";
+            $query = "SELECT DISTINCT tag_id FROM streamstats.stream_tags WHERE tag_id IN ({$followedTags})";
+
+            $common_tags = DB::select($query);
+            $tagIds = [];
+
+            foreach ($common_tags as $tag) {
+                $tagIds[] = $tag->tag_id;
+            }
+
+            $cursor = "";
+
+            do {
+                $client = new \GuzzleHttp\Client([
+                    'headers' => [
+                        'client-id'     => getenv('TWITCH_CLIENT_ID'),
+                        'Authorization' => 'Bearer ' . getenv('TWITCH_BEARER_TOKEN')
+                     ]
+                ]);
+
+                $response = $client->request('GET', getenv('TWITCH_ENDPOINT') ."tags/streams", [
+                    'query' => [ 
+                        'tag_id'   => $tagIds,
+                        'after'    => $cursor
+                    ]
+
+                ]);
+                $response = json_decode($response->getBody());
+
+                if (isset($response->pagination->cursor)) {
+                    $cursor = $response->pagination->cursor;            
+                }   
+
+                $data = array_merge($data, $response->data);
+
+                if (sizeof($data) >= 1000) break; 
+
+            } while ($cursor);
+
+            foreach ($data as $tag) {
+                $tag_names[] = $tag->localization_descriptions->{'en-us'};
+            }
         }
+        
+        return $tag_names;
+    }
+    
+    public function hola(){
+        return "hola";
     }
 }
