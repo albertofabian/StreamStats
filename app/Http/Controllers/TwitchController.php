@@ -6,44 +6,28 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use App\Http\Helpers\TopStreamsHelper;
-use Cookie;
+use App\Models\Stream;
 
 class TwitchController extends Controller
 {
-
     protected $gamesTotalStreams;
     protected $gamesTotalViewers;
     
     private $client;
     private $endpoint;
-    private $twitch_client_id;
-    private $twitch_client_secret;
-    private $twitch_bearer_token;
-
+    private $client_id;
+    private $client_secret;
+    private $bearer_token;
+/*
     public function __construct(\GuzzleHttp\Client $client)
     {
-        $this->client = $client;
-        $this->endpoint             = getenv('TWITCH_ENDPOINT');
-        $this->twitch_client_id     = getenv('TWITCH_CLIENT_ID');
-        $this->twitch_client_secret = getenv('TWITCH_CLIENT_SECRET');
-        $this->twitch_bearer_token  = getenv('TWITCH_BEARER_TOKEN');
+        $this->client        = $client;
+        $this->endpoint      = getenv('TWITCH_ENDPOINT');
+        $this->client_id     = getenv('TWITCH_CLIENT_ID');
+        $this->client_secret = getenv('TWITCH_CLIENT_SECRET');
+        $this->bearer_token  = getenv('TWITCH_BEARER_TOKEN');
     }
-
-    public function getStreams()
-    {
-        $response = $this->client->request('GET', $this->endpoint . 'streams', [
-            'query' => [
-                'first'       => '100',
-                'access_token' => $this->facebookPage->page_access_token
-            ]
-        ]);
-
-        $responseBody = $this->handleResponse($response);
-
-        return $responseBody;
-    }
-
-  
+*/  
     public function getGamesTotalStreams() {
 
         try { 
@@ -89,9 +73,11 @@ class TwitchController extends Controller
        return $topStreamsViewers; 
     }
     
-    public function showAllResults() {
+    public function showAllResults($params = null) {
         
-        //TopStreamsHelper::seedTopStreams();
+        if (!Stream::count()) {
+            TopStreamsHelper::seedTopStreams();
+        }
         
         $this->gamesTotalStreams = $this->getGamesTotalStreams();
         $this->gamesTotalViewers = $this->getGamesTotalViewers();
@@ -168,11 +154,12 @@ class TwitchController extends Controller
     }
     
     protected function getUserFollowedStreams() {
+        
          ///// Values for testing ////
         $user_id = 603680830;
-        $bearer = "p7he3d5czedyewfjrx89vpcqgz3omi";
-        
+        $bearer = "c4hzvqa3kmleysj0u87g25htxc8hke";        
         //////////////////////////////
+        
         $cursor = "";
         $data = [];
         $count = 0; 

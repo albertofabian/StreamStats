@@ -53,14 +53,16 @@
                 margin-bottom: 30px;
             }
             table {
-                max-width: 70%;
+                width: 50%;
                 border: 1px solid black;
                 border-collapse: collapse;
                 margin: auto;
                 padding: 10px;
             }           
             td {
-                padding: 5px
+                padding: 5px;
+                /*font-size: medium;*/
+                font-weight: normal;
             }            
             .num {
                 text-align: right;
@@ -74,7 +76,9 @@
             
         </style>
     </head>
-    <body>        
+    <body>
+        <h1 style="text-align: center">Top StreamStats App</h1>
+        <h3 style="text-align: center">Logged user: Alberto Bohbouth<h3>     
         <table style="cursor: pointer; background-color: #C7CEEA">
             <thead>
                 <th colspan="2" onclick="swapVisible('streams_number_game')">
@@ -98,6 +102,9 @@
                     <td class="num">{{ $gameTotalStreams->num_of_streams }}</td>
                 </tr>
                 @endforeach
+                <tr>
+                    <td colspan="2" style="cursor: pointer; font-size: 20; font-weight: bolder; text-align: center" onclick="swapVisible('streams_number_game')">^</td>
+                </tr>
             </table>
         </div>
         
@@ -126,6 +133,9 @@
                     <td class="num">{{ $gameTotalViewers->number_of_viewers }}</td>
                 </tr>
                 @endforeach
+                <tr>
+                    <td colspan="2" style="cursor: pointer; font-size: 20; font-weight: bolder; text-align: center" onclick="swapVisible('game_viewers')">^</td>
+                </tr>
             </table>
         </div>
         <br/>
@@ -163,6 +173,9 @@
                     <td class="num">{{ $topStreamViewers->number_of_viewers }}</td>
                 </tr>
                 @endforeach
+                <tr>
+                    <td colspan="2" style="cursor: pointer; font-size: 20; font-weight: bolder; text-align: center" onclick="swapVisible('top100')">^</td>
+                </tr>
             </table>
         </div>    
         
@@ -187,10 +200,13 @@
                 </thead>
                 @foreach($started_times as $time => $streams)
                 <tr>
-                    <td>{{ $time }}</td>
-                    <td class="num">{{ $streams }}</td>
+                    <td style="text-align: center">{{ $time }}</td>
+                    <td style="text-align: center" class="num">{{ $streams }}</td>
                 </tr>
                 @endforeach
+                <tr>
+                    <td colspan="2" style="cursor: pointer; font-size: 20; font-weight: bolder; text-align: center" onclick="swapVisible('start_time')">^</td>
+                </tr>
             </table>
         </div>  
             
@@ -220,6 +236,9 @@
                     <td class="center">-- None --</td>
                 </tr>            
                 @endif
+                <tr>
+                    <td colspan="2" style="cursor: pointer; font-size: 20; font-weight: bolder; text-align: center" onclick="swapVisible('logged_follows')">^</td>
+                </tr>
             </table>
         </div> 
             
@@ -260,6 +279,9 @@
                     <td class="center">-- None --</td>
                 </tr>            
                 @endif
+                <tr>
+                    <td colspan="2" style="cursor: pointer; font-size: 20; font-weight: bolder; text-align: center" onclick="swapVisible('tag_shared')">^</td>
+                </tr>
             </table>
         </div>    
         
@@ -275,4 +297,13 @@
             document.getElementById(id).style.display='block';            
         }
     }
+    /*
+    let params = location.hash;
+    location.hash = "";
+    let search1 = "access_token=";
+    let pos1 = params.search(search1);
+    pos1 += search1.length;     
+    let pos2 = params.search("&");
+    let token = params.substring(pos1, pos2);
+    */
 </script>

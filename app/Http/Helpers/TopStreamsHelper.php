@@ -27,7 +27,7 @@ class TopStreamsHelper
                     'Authorization' => 'Bearer ' . getenv('TWITCH_BEARER_TOKEN')
                 ]
             ]) ;
-
+            
             $response = $client->request('GET', getenv('TWITCH_ENDPOINT')."streams", [
                 'query' => [
                     'after' => $cursor
