@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-
+        <meta http-equiv="refresh" content="3600;url=https://www.twitch.tv/login?client_id=<?=getenv('TWITCH_CLIENT_ID')?>&redirect_params=client_id%3D<?=getenv('TWITCH_CLIENT_ID')?>%26force_verify%3Dtrue%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A8000%252Fusertoken%26response_type%3Dtoken%26scope%3Duser%253Aread%253Aemail"/>
         <title>StreamStats</title>
 
         <!-- Fonts -->
@@ -173,6 +173,8 @@
                     <td class="num">{{ $topStreamViewers->number_of_viewers }}</td>
                 </tr>
                 @endforeach
+            </table>
+            <table border="1" style="cursor: pointer; background-color: #FFDAC1">                                
                 <tr>
                     <td colspan="2" style="cursor: pointer; font-size: 20; font-weight: bolder; text-align: center" onclick="swapVisible('top100')">^</td>
                 </tr>
@@ -216,7 +218,7 @@
             <thead>
                 <th colspan="2" onclick="swapVisible('logged_follows')">
                     Which of the top 1000 streams is the logged in user following
-                </th>
+                </th>       
             </thead>
         </table>
         <div id="logged_follows" style="display: none">
@@ -252,7 +254,7 @@
                         $viewers_needed_to_top_list .= ", i.e. NONE";
                     }
                     ?>
-                    Viewers needed to gain in order to make it into the top 1000 from lowest<br>
+                    Viewers needed to gain in order to make it into the top 1000 from lowest
                     viewer count stream that the logged in user is following: <span style="background-color: black; color: white">&nbsp;{{ $viewers_needed_to_top_list }}&nbsp;</span>
                 </th>
             </thead>
@@ -297,7 +299,7 @@
             document.getElementById(id).style.display='block';            
         }
     }
-    /*
+    
     let params = location.hash;
     location.hash = "";
     let search1 = "access_token=";
@@ -305,5 +307,5 @@
     pos1 += search1.length;     
     let pos2 = params.search("&");
     let token = params.substring(pos1, pos2);
-    */
+    //console.log(token);
 </script>

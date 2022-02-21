@@ -37,6 +37,7 @@ class TopStreamsHelper
             $response = json_decode($response->getBody());
             $cursor = $response->pagination->cursor;            
             $data = array_merge($data, $response->data);
+            
             if (sizeof($data) >= 1000) break; 
             
         } while($cursor);

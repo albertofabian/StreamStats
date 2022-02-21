@@ -11,16 +11,16 @@
 |
 */
 
-
 Route::get('/', function () {
     return view('index');
 });
 
 Route::get('hola', 'TwitchController@hola');
 
-Route::get('games-total-streams', 'TwitchController@getGamesTotalStreams');
-Route::get('/', 'TwitchController@ShowAllResults');
+Route::get('/',         'TwitchController@ShowAllResults');
+Route::get('usertoken', 'TwitchController@getUserToken');
+Route::get('set_user',  'TwitchController@getAndSaveUser');
 
-//Auth::routes();
+Auth::routes();
 
-//Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/home', 'HomeController@index')->name('home');
