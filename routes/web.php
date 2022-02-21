@@ -17,7 +17,7 @@ Route::get('/', function () {
 
 Route::get('hola', 'TwitchController@hola');
 
-Route::get('/',         'TwitchController@ShowAllResults');
+Route::get('dashboard', 'TwitchController@ShowAllResults');
 Route::get('usertoken', 'TwitchController@getUserToken');
 Route::get('set_user',  'TwitchController@getAndSaveUser');
 

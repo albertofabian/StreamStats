@@ -78,7 +78,7 @@
     </head>
     <body>
         <h1 style="text-align: center">Top StreamStats App</h1>
-        <h3 style="text-align: center">Logged user: Alberto Bohbouth<h3>     
+        <h3 style="text-align: center">Logged user: {{ $user_twitch_login }}<h3>     
         <table style="cursor: pointer; background-color: #C7CEEA">
             <thead>
                 <th colspan="2" onclick="swapVisible('streams_number_game')">
@@ -115,7 +115,7 @@
                 <th colspan="2" onclick="swapVisible('game_viewers')">
                     Top games by viewer count for each game<br>(from top 1000 streams)
                 </th>
-            </thead>        
+            </thead>
         </table>
         <div id="game_viewers" style="display: none">
             <table border="1" style="background-color: #B6EAD7">
@@ -299,13 +299,4 @@
             document.getElementById(id).style.display='block';            
         }
     }
-    
-    let params = location.hash;
-    location.hash = "";
-    let search1 = "access_token=";
-    let pos1 = params.search(search1);
-    pos1 += search1.length;     
-    let pos2 = params.search("&");
-    let token = params.substring(pos1, pos2);
-    //console.log(token);
 </script>

@@ -20,6 +20,8 @@ class TwitchController extends Controller
     private $client_id;
     private $client_secret;
     private $client_bearer_token;
+    private $user_twitch_id;
+    private $user_twitch_login;
     private $user_bearer_token;
 /*
     public function __construct(\GuzzleHttp\Client $client)
@@ -77,18 +79,19 @@ class TwitchController extends Controller
     }
        
     public function showAllResults(Request $request) {
-                      
+/*                      
         $value = 'something from somewhere';
-
-        //setcookie("TestCookie", $value, time() + 20);
-        /*if (!isset($_COOKIE["TestCookie"])) {        
+        setcookie("TestCookie", $value, time() + 20);
+*/
+        //die('dai kvar');
+        /*if (!isset($_COOKIE["TwitchID"])) {        
             echo "Ha expirado!";
         } else {
-            echo $_COOKIE["TestCookie"];
-        }
-        print_r($_COOKIE);
-        dd();
+            echo $_COOKIE["TwitchID"];
+        }        
         */
+        //die('');
+        
         //print_r($_SESSION);
         /*
         1. Reviso si el usuario está vigente en la cookie.
@@ -99,12 +102,15 @@ class TwitchController extends Controller
            mostrar su username y para mandar el ID y token a la funcrion follow
         
         */
-        
-        
+               
+        $user_token = $request->get('user_token');
+        //dd("Mejorando...".$request->get('user_token'));
         
         if (!Stream::count()) {
             TopStreamsHelper::seedTopStreams();
         }
+        
+        $this->getAndSaveUser($user_token);
         
         $this->gamesTotalStreams    = $this->getGamesTotalStreams();
         $this->gamesTotalViewers    = $this->getGamesTotalViewers();        
@@ -115,10 +121,12 @@ class TwitchController extends Controller
         $viewers_needed_to_top_list = $this->calcViewersFromFollowedStreamToTop1000();
         $tagsShared                 = $this->getSharedTagsBetweenUserFollowedStreamsAndTop1000Streams();
                 
+        $user_twitch_login = $this->user_twitch_login;
         $gamesTotalStreams = $this->gamesTotalStreams;
         $gamesTotalViewers = $this->gamesTotalViewers;
         
         return view('stream_statistics', compact("gamesTotalStreams", 
+                                                 "user_twitch_login",
                                                  "gamesTotalViewers", 
                                                  "avg_viewers", 
                                                  "topStreamsViewers", 
@@ -185,6 +193,9 @@ class TwitchController extends Controller
         $user_id = 603680830;
         $bearer = "xo49p1ctfhixtlkpzk1s6tqgn3v12y";        
         //////////////////////////////
+        
+        $user_id = $this->user_twitch_id;
+        $bearer  = $this->user_bearer_token;        
         
         $cursor = "";
         $data = [];
@@ -327,18 +338,11 @@ class TwitchController extends Controller
         return $tag_names;
     }
     
-    public function hola(){
-        return "hola";
-    }
-    
     public function getUserToken() {
         return view('user_token');
     }
     
-    public function getAndSaveUser(Request $request) {
-        
-        $user_token = $request->get('user_token');
-        //dd($request->get('user_token'));
+    public function getAndSaveUser($user_token) {
         
         $client= new \GuzzleHttp\Client([
             'headers' => [
@@ -349,22 +353,24 @@ class TwitchController extends Controller
         
         $response = $client->request('GET', getenv('TWITCH_ENDPOINT').'users', []);
         $response = json_decode($response->getBody(),true);
-        //dd($response);
-        $twitch_id_exists = TwitchUser::where('twitch_id', $response['data'][0]['id'])->count();
         
-        if (isset($response['data']) && !$twitch_id_exists) {
-            $twitchUser = new TwitchUser;                     
-            $twitchUser->twitch_id  = $response['data'][0]['id'];
-            $twitchUser->username   = $response['data'][0]['login'];
-            $twitchUser->email      = $response['data'][0]['email'];
-            $twitchUser->save();            
-        }        
-        
-        $_SESSION["twitchid"] = $response['data'][0]['id'];
-        
+        if (isset($response['data'])) {
+            $twitch_id_exists = TwitchUser::where('twitch_id', $response['data'][0]['id'])->count();
+            if (!$twitch_id_exists) {
+                $twitchUser = new TwitchUser;                     
+                $twitchUser->twitch_id  = $response['data'][0]['id'];
+                $twitchUser->username   = $response['data'][0]['login'];
+                $twitchUser->email      = $response['data'][0]['email'];
+                $twitchUser->save();                            
+            }    
+            $value = $response['data'][0]['id'];
+            
+            //setcookie("TwitchID", $value, time() + 20);
+            
+            $this->user_twitch_id    = $response['data'][0]['id'];
+            $this->user_twitch_login = $response['data'][0]['login'];
+            $this->user_bearer_token = $user_token;
+        }                
         return $response;
-    }
-
-    public function getUserData () {
-    }
+    }    
 }
