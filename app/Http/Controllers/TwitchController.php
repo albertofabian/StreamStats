@@ -342,6 +342,10 @@ class TwitchController extends Controller
         return view('user_token');
     }
     
+    public function index() {
+        return view("redirect_twitch_login");
+    }
+    
     public function getAndSaveUser($user_token) {
         
         $client= new \GuzzleHttp\Client([
