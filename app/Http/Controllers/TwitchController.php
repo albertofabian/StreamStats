@@ -14,25 +14,10 @@ class TwitchController extends Controller
 {
     protected $gamesTotalStreams;
     protected $gamesTotalViewers;
-    
-    private $client;
-    private $endpoint;
-    private $client_id;
-    private $client_secret;
-    private $client_bearer_token;
     private $user_twitch_id;
     private $user_twitch_login;
     private $user_bearer_token;
-/*
-    public function __construct(\GuzzleHttp\Client $client)
-    {
-        $this->client        = $client;
-        $this->endpoint      = getenv('TWITCH_ENDPOINT');
-        $this->client_id     = getenv('TWITCH_CLIENT_ID');
-        $this->client_secret        = getenv('TWITCH_CLIENT_SECRET');
-        $this->client_bearer_token  = getenv('TWITCH_BEARER_TOKEN');
-    }
-*/  
+
     public function getGamesTotalStreams() {
 
         try { 
@@ -41,7 +26,7 @@ class TwitchController extends Controller
                                              GROUP BY game_name
                                              ORDER BY num_of_streams DESC");
         } catch (Exception $e) {
-            die(__CLASS__.": ".$e->getMessage);
+            die(__CLASS__.": ".$e->getMessage());
         }
         
        return $gameTotalStreams; 
@@ -55,7 +40,7 @@ class TwitchController extends Controller
                                             GROUP BY game_name
                                             ORDER BY number_of_viewers DESC");
         } catch (Exception $e) {
-            die(__CLASS__.": ".$e->getMessage);
+            die(__CLASS__.": ".$e->getMessage());
         }
         
        return $gameTotalViewers; 
@@ -69,39 +54,16 @@ class TwitchController extends Controller
                                              ORDER BY number_of_viewers DESC
                                              LIMIT 100");
         } catch (Exception $e) {
-            die(__CLASS__.": ".$e->getMessage);
+            die(__CLASS__.": ".$e->getMessage());
         }
         
        return $topStreamsViewers; 
     }
        
     public function showAllResults(Request $request) {
-/*                      
-        $value = 'something from somewhere';
-        setcookie("TestCookie", $value, time() + 20);
-*/
-        //die('dai kvar');
-        /*if (!isset($_COOKIE["TwitchID"])) {        
-            echo "Ha expirado!";
-        } else {
-            echo $_COOKIE["TwitchID"];
-        }        
-        */
-        //die('');
-        
-        //print_r($_SESSION);
-        /*
-        1. Reviso si el usuario está vigente en la cookie.
-            Caso SI: tomo su ID de la cookie y busco sus datos en la base de datos
-            Caso NO: voy a getAndSaveUser y genero la cookie 
-            
-           Tomo el valor del ID del usuario de la cookie y busco en la base de datos al usuario para 
-           mostrar su username y para mandar el ID y token a la funcrion follow
-        
-        */
-               
-        $user_token = $request->get('user_token');
-        
+
+        $user_token = $request->post('user_token');
+
         if (!Stream::count()) {
             TopStreamsHelper::seedTopStreams();
         }
@@ -157,7 +119,7 @@ class TwitchController extends Controller
         try { 
             $started_times = DB::select("SELECT started_at FROM streamstats.streams");
         } catch (Exception $e) {
-            die(__CLASS__.": ".$e->getMessage);
+            die(__CLASS__.": ".$e->getMessage());
         }
         
         $result = [];
@@ -184,11 +146,6 @@ class TwitchController extends Controller
     }
     
     protected function getUserFollowedStreams() {
-        
-         ///// Values for testing ////
-        $user_id = 603680830;
-        $bearer = "xo49p1ctfhixtlkpzk1s6tqgn3v12y";        
-        //////////////////////////////
         
         $user_id = $this->user_twitch_id;
         $bearer  = $this->user_bearer_token;        
@@ -225,7 +182,7 @@ class TwitchController extends Controller
             } while($cursor);
             
         } catch (Exception $e) {
-            die(__CLASS__.": ".$e->getMessage);
+            die(__CLASS__.": ".$e->getMessage());
         }  
         
         return $data;
@@ -325,7 +282,7 @@ class TwitchController extends Controller
 
                 } while ($cursor);
             } catch (Exception $e) {
-                die(__CLASS__.": ".$e->getMessage);
+                die(__CLASS__.": ".$e->getMessage());
             }
             
             foreach ($data as $tag) {
@@ -368,15 +325,13 @@ class TwitchController extends Controller
                 }    
                 $value = $response['data'][0]['id'];
 
-                //setcookie("TwitchID", $value, time() + 20);
-
                 $this->user_twitch_id    = $response['data'][0]['id'];
                 $this->user_twitch_login = $response['data'][0]['login'];
                 $this->user_bearer_token = $user_token;
             }                
             return $response;
         } catch (Exception $e) {
-            die(__CLASS__.": ".$e->getMessage);
+            die(__CLASS__.": ".$e->getMessage());
         }
     }    
 }

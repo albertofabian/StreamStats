@@ -6,12 +6,6 @@ use App\Models\Stream;
 use App\Models\StreamTags;
 use Exception;
 
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 class TopStreamsHelper
 {       
     static function seedTopStreams() {
@@ -42,7 +36,7 @@ class TopStreamsHelper
 
             } while($cursor);
         } catch (Exception $e) {
-            die(__CLASS__.": ".$e->getMessage);
+            die(__CLASS__.": ".$e->getMessage());
         }
         
         $data = array_slice($data, 0, 1000);
@@ -82,7 +76,7 @@ class TopStreamsHelper
             StreamTags::insert($streamTags);
             
         } catch (Exception $e) {
-            die(__CLASS__.": ".$e->getMessage);
+            die(__CLASS__.": ".$e->getMessage());
         }
         
         return true;
