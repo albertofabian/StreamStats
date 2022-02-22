@@ -19,28 +19,31 @@ class TopStreamsHelper
         $cursor = "";
         $data = [];
         $streamTags = [];
-        
-        do {
-            $client = new \GuzzleHttp\Client([
-                'headers' => [
-                    'client-id'     => getenv('TWITCH_CLIENT_ID'),
-                    'Authorization' => 'Bearer ' . getenv('TWITCH_BEARER_TOKEN')
-                ]
-            ]) ;
-            
-            $response = $client->request('GET', getenv('TWITCH_ENDPOINT')."streams", [
-                'query' => [
-                    'after' => $cursor
-                ]
-            ]);
+        try {
+            do {
+                $client = new \GuzzleHttp\Client([
+                    'headers' => [
+                        'client-id'     => getenv('TWITCH_CLIENT_ID'),
+                        'Authorization' => 'Bearer ' . getenv('TWITCH_BEARER_TOKEN')
+                    ]
+                ]) ;
 
-            $response = json_decode($response->getBody());
-            $cursor = $response->pagination->cursor;            
-            $data = array_merge($data, $response->data);
-            
-            if (sizeof($data) >= 1000) break; 
-            
-        } while($cursor);
+                $response = $client->request('GET', getenv('TWITCH_ENDPOINT')."streams", [
+                    'query' => [
+                        'after' => $cursor
+                    ]
+                ]);
+
+                $response = json_decode($response->getBody());
+                $cursor = $response->pagination->cursor;            
+                $data = array_merge($data, $response->data);
+
+                if (sizeof($data) >= 1000) break; 
+
+            } while($cursor);
+        } catch (Exception $e) {
+            die(__CLASS__.": ".$e->getMessage);
+        }
         
         $data = array_slice($data, 0, 1000);
         
@@ -79,9 +82,9 @@ class TopStreamsHelper
             StreamTags::insert($streamTags);
             
         } catch (Exception $e) {
-           error_log($e);
-           return false;
-        }        
+            die(__CLASS__.": ".$e->getMessage);
+        }
+        
         return true;
     }
 }
